@@ -1,9 +1,9 @@
-import {Body, Controller, Post, Res} from '@nestjs/common';
+import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {UserLoginDto} from './dto/user-login-dto';
-import {Response} from 'express';
+import {Response, Request} from 'express';
 import {UserCreateDto} from './dto/user-create-dto';
-import {ITokenPair} from './interfaces/token-pair.interface';
+import { IAccessToken, ITokenPair } from './interfaces/token-pair.interface';
 import dayjs from 'dayjs';
 import {getCurrentDate} from '../common/helpers/date';
 import {ILoginResponse} from './interfaces/login-response.interface';
@@ -35,19 +35,39 @@ export class AuthController {
     async signin (
         @Body() userDto: UserLoginDto,
         @Res({passthrough: true}) res: Response
-    ): Promise<void> {
+    ): Promise<ILoginResponse> {
         const response = await this.authService.signin(userDto)
 
-        return response
+        this.addCookies(res, {
+            refreshToken: response.refreshToken,
+            accessToken: response.loginResponse.accessToken
+        })
+
+        return response.loginResponse
     }
 
     @Post('logout')
     async logout (
-        @Body() userDto: UserLoginDto,
+        @Body() user,
         @Res({passthrough: true}) res: Response
     ): Promise<void> {
-        await this.authService.logout()
+        await this.authService.logout(user)
         res.clearCookie('refreshToken')
+        res.clearCookie('accessToken')
+    }
+
+    @Post('refresh')
+    public async refreshToken(
+      @Req() req: Request,
+      @Res({ passthrough: true }) res: Response
+    ): Promise<IAccessToken> {
+        const { refreshToken } = req.cookies
+        const refreshResponse = await this.authService.refreshToken(refreshToken)
+        if (refreshResponse) {
+            this.addCookies(res, refreshResponse)
+        }
+
+        return refreshResponse.accessToken
     }
 
     private addCookies(res: Response, tokens: ITokenPair) {

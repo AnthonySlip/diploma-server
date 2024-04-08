@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Delete, Param, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { InjectMapper } from '@automapper/nestjs';
 import { Mapper } from '@automapper/core';
@@ -11,6 +11,11 @@ export class UserController {
     private userService: UserService,
     @InjectMapper() private readonly mapper: Mapper,
   ) {
+  }
+
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.delete(id)
   }
 
 }

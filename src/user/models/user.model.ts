@@ -34,12 +34,14 @@ export class UserModel extends BaseModel {
     lastName: string
 
     @AutoMap()
-    email: string
+    email!: string
 
     password: string
 
     @AutoMap()
     dateCreated: Date
+
+    dateDeleted?: Date
 
     static get modifiers() {
         return {

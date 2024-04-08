@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserLoginDto } from './dto/user-login-dto';
 import { UserCreateDto } from './dto/user-create-dto';
 import { ILoginResponse } from './interfaces/login-response.interface';
@@ -36,13 +36,12 @@ export class AuthService {
 
   async signup(userCreateDto: UserCreateDto): Promise<ILoginResponseWithRefreshToken> {
     encodeHtmlTags(UserDto);
+
     let candidate = await this.userService.getUserByEmail(userCreateDto.email);
 
     if (candidate) {
       throw new BadRequestException('auth.register.email_exists');
     }
-
-    candidate = await this.userService.getUserByUsername(userCreateDto);
 
     if (candidate) {
       throw new BadRequestException('auth.register.username_exists');
@@ -73,10 +72,38 @@ export class AuthService {
     }
   }
 
-  async signin(userDto: UserLoginDto) {
+  async signin(userLoginDto: UserLoginDto): Promise<ILoginResponseWithRefreshToken> {
+    const user = await this.userService.validateUser(userLoginDto)
+
+    const tokens = await this.generateTokens(user)
+
+    return {refreshToken: tokens.refreshToken, loginResponse: this.getLoginResponse(tokens, user)}
   }
 
-  async logout() {
+  public async logout(user: UserModel) {
+    return (async () => {
+      await RefreshModel.query().delete().where('userId', user.id)
+    })()
+  }
+
+  public async refreshToken(refreshToken: string): Promise<ITokenPair> {
+    if (!refreshToken) {
+      throw new UnauthorizedException()
+    }
+
+    const token = await this.findRefreshToken(refreshToken)
+
+    if (!token) {
+      throw new UnauthorizedException('auth.security.refresh_token_not_found')
+    }
+
+    const user = await token.$relatedQuery('user')
+
+    return await this.generateTokens(user)
+  }
+
+  private async findRefreshToken(token: string): Promise<RefreshModel | null> {
+    return RefreshModel.query().findOne({token: token})
   }
 
   private getLoginResponse(tokens: ITokenPair, user: UserModel): ILoginResponse {

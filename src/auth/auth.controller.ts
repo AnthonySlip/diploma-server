@@ -73,12 +73,10 @@ export class AuthController {
     private addCookies(res: Response, tokens: ITokenPair) {
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
-            sameSite: 'lax',
             expires: dayjs(getCurrentDate()).add(1, 'month').toDate(),
         })
-        res.cookie('accessToken', tokens.accessToken.token, {
+        res.cookie('accessToken', tokens.accessToken, {
             httpOnly: true,
-            sameSite: 'lax',
             expires: dayjs(tokens.accessToken.expiresIn).toDate(),
         })
     }

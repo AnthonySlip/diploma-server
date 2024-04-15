@@ -11,7 +11,7 @@ export class ReportModel extends BaseModel {
   id!: number
 
   @AutoMap()
-  text: Text
+  text: string
 
   @AutoMap()
   userId: number

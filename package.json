@@ -43,6 +43,7 @@
     "@squareboat/nest-console": "^1.1.4",
     "@squareboat/nestjs-objection": "^0.2.5",
     "@types/mime": "3.0.4",
+    "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "bull": "^4.10.2",
     "class-transformer": "^0.5.1",

@@ -1,16 +1,16 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { OpenaiService } from './openai.service';
+import { TransformerService } from './transformer.service';
 import { User } from '../auth/decorators/user.decorator';
 import { UserModel } from '../user/models/user.model';
 import { ReportModel } from './models/report.model';
 
 
 @Controller('openai')
-export class OpenaiController {
+export class TransformerController {
 
 
   constructor(
-    private openaiService: OpenaiService,
+    private transformerService: TransformerService,
   ) {
   }
 
@@ -19,16 +19,17 @@ export class OpenaiController {
     @Body() file: unknown,
     @User() user: UserModel
   ): Promise<unknown> {
-    const response = await this.openaiService.create(file, user);
+    const response = await this.transformerService.create(file, user);
 
     return response;
   }
 
   @Get(':id')
   public async getRepost(
-    @Param() id: number
+    @Param() id: number,
+    @User() user: UserModel
   ): Promise<ReportModel> {
-    const response = await this.openaiService.get(id);
+    const response = await this.transformerService.get(id, user);
 
     return response;
   }
@@ -37,7 +38,7 @@ export class OpenaiController {
   public async getRepostsList(
     @User() user: UserModel
   ): Promise<ReportModel[]> {
-    const response = await this.openaiService.getList(user);
+    const response = await this.transformerService.getList(user);
 
     return response;
   }

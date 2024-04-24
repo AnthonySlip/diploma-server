@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
-import { OpenaiModule } from './openai/openai.module';
+import { TransformerModule } from './transformer/transformer.module';
 import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import database from './database';
@@ -28,7 +28,7 @@ import { classes } from '@automapper/classes';
       strategyInitializer: classes(),
     }),
     AuthModule,
-    OpenaiModule,
+    TransformerModule,
     UserModule],
   controllers: []
 })
